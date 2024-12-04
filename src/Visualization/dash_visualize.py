@@ -116,7 +116,7 @@ fig_shot_features = px.bar(
 
 
 
-best_midfielder_data = midfielder_data.sort_values(by='Assists', ascending=False).head(10)
+best_midfielder_data = midfielder_data.sort_values(by='Assists', ascending=False)
 best_midfielder_data['Cross accuracy %'] = (
     best_midfielder_data['Cross accuracy %']
     .str.replace('%', '', regex=False)
@@ -127,6 +127,7 @@ best_midfielder_data['Tackle success %'] = (
     .str.replace('%', '', regex=False)
     .astype(float)
 )
+best_midfielder_data['Tackle success'] = best_midfielder_data['Tackle success %']*best_midfielder_data['Tackles']/100
 available_features = ['Assists', 'Passes', 'Passes per match', 'Big Chances Created',
                       'Crosses', 'Cross accuracy %', 'Through balls', 'Accurate long balls']
 
@@ -285,7 +286,7 @@ def update_feature_chart(selected_feature):
     color_sequence = px.colors.qualitative.Plotly
     random.shuffle(color_sequence)
     fig = px.bar(
-        best_midfielder_data,
+        best_midfielder_data.head(10),
         x='Name',
         y=selected_feature,
         title=f"Comparison of {selected_feature} for Top 10 Players",
@@ -329,10 +330,15 @@ def update_radar_chart(player_name):
     [Input('metric-dropdown', 'value')]
 )
 def update_bar_chart_defense(selected_metric):
+    if(selected_metric=='Tackle success %'):
+        data = best_midfielder_data.sort_values(by='Tackle success', ascending=False).head(10)
+    else:
+        data = best_midfielder_data.sort_values(by=selected_metric, ascending=False).head(10)
     color_sequence = px.colors.qualitative.Plotly
     random.shuffle(color_sequence)
+    
     fig = px.bar(
-        best_midfielder_data,
+        data,
         x='Name', 
         y=selected_metric, 
         title=f"Comparison of {selected_metric} for Top 10 Players",
@@ -340,7 +346,7 @@ def update_bar_chart_defense(selected_metric):
         labels={'Name': 'Player', selected_metric: 'Value'},
         color_discrete_sequence=color_sequence
     )
-    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
     fig.update_layout(yaxis_title='Value', xaxis_title='Player', template='plotly_white')
     return fig
 
@@ -349,9 +355,6 @@ def update_bar_chart_defense(selected_metric):
     [Input('metric-dropdown', 'value')]
 )
 def update_bar_chart_metric(selected_metric):
-    if selected_metric is None:
-        return px.bar(title="No Metric Selected")
-    
     top_10_data = defender_data.nlargest(10, selected_metric)
     color_sequence = px.colors.qualitative.Plotly
     random.shuffle(color_sequence)
@@ -365,7 +368,7 @@ def update_bar_chart_metric(selected_metric):
         labels={'Name': 'Player', selected_metric: 'Value'},
         color_discrete_sequence=color_sequence
     )
-    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
     fig.update_layout(yaxis_title='Value', xaxis_title='Player', template='plotly_white')
     return fig
 
