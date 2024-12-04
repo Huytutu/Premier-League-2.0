@@ -7,6 +7,7 @@ from plotly import graph_objects as go
 import random
 from datetime import datetime
 import numpy as np
+import dash_visualize as dv
 
 # dataset
 data = pd.read_csv("./Data/Club/all_data_of_clubs.csv")
@@ -42,7 +43,7 @@ defense_data_corr = data[['Clean sheets', 'Goals Conceded', 'Tackles', 'Tackle s
                           'Passes', 'Passes per match', 'Pass accuracy %']].corr()
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title="Visualization App")
 
 # layout
 app.layout = dbc.Container([
@@ -92,6 +93,82 @@ app.layout = dbc.Container([
                 title="Correlation Heatmap of Defensive Metrics", labels={'color': 'Correlation'})), 
                 type="circle", color="#f79500"), width=6),
         ]),
+        html.Br(),
+        html.Hr(),
+        html.Div([
+            html.Div([
+                #html.H2("Comparison of Goal Scoring Features Among Players", style={'textAlign': 'center'}),
+                dcc.Graph(figure=dv.fig_finish_features)
+            ], style={'flex': '1', 'margin': '10px'}),
+            html.Div([
+               # html.H2("Comparison of Shot Features Among Players", style={'textAlign': 'center' , 'font_size': "20px"}),
+                dcc.Graph(figure=dv.fig_shot_features)
+            ], style={'flex': '1', 'margin': '10px'})
+        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-around'}),
+        html.Div([
+            html.H1(
+                "Top 10 Midfielders: Radar Chart of Attacking Metrics",
+                style={'textAlign': 'center', 'marginBottom': '20px'}
+            ),
+            html.Div([
+                html.Div([
+                    html.Label("Select a Player:", style={'marginRight': '20px', 'textAlign': 'center'}),
+                    dcc.Dropdown(
+                        id='player-dropdown',
+                        options=[{'label': name, 'value': name} for name in dv.best_midfielder_data['Name']],
+                        value=dv.best_midfielder_data['Name'].iloc[0],
+                        style={'width': '300px'}
+                    )
+                ], style={
+                    'alignItems': 'center', 
+                    'marginRight': '20px'
+                }),
+                dcc.Graph(
+                    id='radar-chart', 
+                    style={
+                        'width': '500px', 
+                        'height': '500px'
+                    }
+                )
+                ], style={
+                    'display': 'flex', 
+                    'alignItems': 'center',
+                    'justifyContent': 'center'
+                })
+            ], style={'alignItems': 'center'}),
+        html.Div([
+            html.H1("Top 10 Midfielders: Defensive Metrics Comparison", style={'textAlign': 'center'}),
+    
+    html.Div([
+        html.Label("Select a Metric:", style={'fontSize': '18px'}),
+        dcc.Dropdown(
+            id='defense-metric-dropdown',
+            options=[{'label': feature, 'value': feature} for feature in dv.mid_defense_features],
+            value='Tackles', 
+            style={'width': '50%', 'margin': 'auto'}
+        )
+    ], style={'textAlign': 'center', 'padding': '20px'}),
+    
+    html.Div([
+        dcc.Graph(id='defense-bar-chart')
+    ]),
+    
+    html.H1(id="dynamic-heading-top10-Defender", style={'textAlign': 'center'}),
+    
+    html.Div([
+        html.Label("Select a Metric:", style={'fontSize': '18px'}),
+        dcc.Dropdown(
+            id='metric-dropdown',
+            options=[{'label': col, 'value': col} for col in dv.numeric_columns],
+            value=dv.numeric_columns[0] if dv.numeric_columns else None,
+            style={'width': '50%', 'margin': 'auto'}
+        )
+    ], style={'textAlign': 'center', 'padding': '20px'}),
+    
+    html.Div([
+        dcc.Graph(id='metric-bar-chart')
+    ])
+        ])
     ])
 ], fluid=True)
 
@@ -106,7 +183,6 @@ app.layout = dbc.Container([
         Input("age-bar", "id"),
         Input("age-violin", "id"),
         Input("over-under-25", "id"),
-
     ],
 )
 def update_chart(age_bar,age_violin,over_under_25):
@@ -218,6 +294,41 @@ def update_chart(age_bar,age_violin,over_under_25):
         fig_age_viloin,
         fig_over_under_25,
     )
+@app.callback(
+    Output('feature-comparison-chart', 'figure'),
+    [Input('feature-dropdown', 'value')]
+)
+def update_feature_chart(selected_feature):
+    return dv.update_feature_chart(selected_feature)
+
+@app.callback(
+    Output('radar-chart', 'figure'),
+    [Input('player-dropdown', 'value')]
+)
+def update_radar_chart(player_name):
+    return dv.update_radar_chart(player_name)
+
+@app.callback(
+    Output('defense-bar-chart', 'figure'),
+    [Input('defense-metric-dropdown', 'value')]
+)
+def update_bar_chart_defense(selected_metric):
+    return dv.update_bar_chart_defense(selected_metric)
+
+@app.callback(
+    Output('metric-bar-chart', 'figure'),
+    [Input('metric-dropdown', 'value')]
+)
+def update_bar_chart_metric(selected_metric):
+    return dv.update_bar_chart_metric(selected_metric)
+@app.callback(
+    Output('dynamic-heading-top10-Defender', 'children'),
+    Input('metric-dropdown', 'value')
+)
+def update_heading(selected_metric):
+    if selected_metric:
+        return f"Top 10 Defenders by {selected_metric}"
+    return "Top 10 Defenders"  # Default heading
 
 if __name__ == '__main__':
     app.run_server(port = '8080')
