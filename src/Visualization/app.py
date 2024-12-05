@@ -69,6 +69,8 @@ app.layout = dbc.Container([
             children='''To understand the future, we often look to the past. This dashboard provides a detailed breakdown of Teams and Players—two critical criteria for evaluating the strength of the top clubs.'''))),
         html.Hr(),
         dbc.Row(dbc.Col(html.H4(children='Overview'))),
+        
+        #Age distribution
         dbc.Row([
             dbc.Col(dcc.Loading(dcc.Graph(id="age-bar", config={"displayModeBar": False}, style={"height": "330px"}), 
                 type="circle", color="#f79500"), width=6),
@@ -83,6 +85,9 @@ app.layout = dbc.Container([
         dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
             children='The chart above breaks down the Age Distribution, providing perspective based on Position or general analysis or 25-year-old division.'))),
         html.Hr(),
+        dbc.Row(dbc.Col(html.H4(children='Teams'))),
+        
+        #Metrics trends
         dbc.Row([
             dbc.Col(dcc.Loading(dcc.Graph(figure=px.line(attacking_data.melt(id_vars='Team', value_vars=attacking_features, 
                 var_name='Metric', value_name='Value'), x='Team', y='Value', color='Metric', 
@@ -96,7 +101,11 @@ app.layout = dbc.Container([
                 type="circle", color="#f79500"), width=4),
         ]),
         html.Br(),
+        dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
+            children='''The Premier League's competitive nature is shaped by the balance between attacking, defensive, and control strategies. To analyze team performance comprehensively, we delve into three essential aspects: Attacking Metrics, Defensive Metrics, and Control Metrics.'''))),
         html.Hr(),
+        
+        #Heatmap
         dbc.Row([
             dbc.Col(dcc.Loading(dcc.Graph(figure=px.imshow(attack_data_corr, x=attack_data_corr.columns, 
                 y=attack_data_corr.columns, zmin=-1, zmax=1, color_continuous_scale='RdBu', 
@@ -108,7 +117,10 @@ app.layout = dbc.Container([
                 type="circle", color="#f79500"), width=6),
         ]),
         html.Br(),
+        dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
+            children='''A team's success often lies in finding the right balance between attacking flair and defensive solidity.'''))),
         html.Hr(),
+        dbc.Row(dbc.Col(html.H4(children='Players'))),
         html.Div([
             html.Div([
                 #html.H2("Comparison of Goal Scoring Features Among Players", style={'textAlign': 'center'}),
@@ -120,13 +132,14 @@ app.layout = dbc.Container([
             ], style={'flex': '1', 'margin': '10px'})
         ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-around'}),
         html.Div([
-            html.Br(),
-            html.Hr(),
-    # Midfielders Radar Chart
+        html.Br(),
+        html.Hr(),
+        html.Div([
+            # Midfielders Radar Chart
             html.Div([
-                html.H1(
-                    "Midfielders: Radar Chart of Attacking Metrics",
-                    style={'textAlign': 'center', 'marginBottom': '20px'}
+                html.H4(
+                    "Midfielders",
+                    style={ 'marginBottom': '20px'}
                 ),
                 html.Div([
                     html.Label("Select a Player:", style={'marginBottom': '10px', 'textAlign': 'center'}),
@@ -138,10 +151,6 @@ app.layout = dbc.Container([
                     ),
                     dcc.Graph(
                         id='radar-chart', 
-                        style={
-                            'width': '500px', 
-                            'height': '500px'
-                        }
                     )
                 ], style={
                     'display': 'flex',
@@ -153,13 +162,40 @@ app.layout = dbc.Container([
                 'alignItems': 'center',
                 'marginRight': '20px'
             }),
-            html.Br(),
-            html.Hr(),
-            # Forwards Radar Chart
+        # Midfielders top 10
             html.Div([
-                html.H1(
-                    "Forward: Radar Chart of Attacking Metrics",
-                    style={'textAlign': 'center', 'marginBottom': '20px'}
+                html.H4("Defender", style = {'marginBottom' : '20px'}),
+                html.Div([
+                    html.Label("Select a Metric:", style={'fontSize': '18px'}),
+                    dcc.Dropdown(
+                        id='defense-metric-dropdown',
+                        options=[{'label': feature, 'value': feature} for feature in dv.mid_defense_features],
+                        value='Tackles', 
+                        style={'width': '300px', 'margin': 'auto'}
+                    )
+                ], style={'textAlign': 'center', 'padding': '20px'}),
+                html.Div([
+                    dcc.Graph(id='defense-bar-chart', style={'height': '500px'})
+                ]),
+            ], style={
+                'display': 'flex',
+                'flexDirection': 'column',
+                'alignItems': 'center',
+                'justifyContent': 'center'
+            }),
+        ], style={
+            'display': 'flex',
+            'justifyContent': 'center',
+            'alignItems': 'flex-start'
+        }),
+        html.Br(),
+        html.Hr(),
+        html.Div([
+            # Forward Radar Chart
+            html.Div([
+                html.H4(
+                    "Forward",
+                    style={ 'marginBottom': '20px'}
                 ),
                 html.Div([
                     html.Label("Select a Player:", style={'marginBottom': '10px', 'textAlign': 'center'}),
@@ -171,10 +207,6 @@ app.layout = dbc.Container([
                     ),
                     dcc.Graph(
                         id='radar-chart-forward', 
-                        style={
-                            'width': '500px', 
-                            'height': '500px'
-                        }
                     )
                 ], style={
                     'display': 'flex',
@@ -183,36 +215,39 @@ app.layout = dbc.Container([
                     'justifyContent': 'center'
                 })
             ], style={
-                'alignItems': 'center'
-            })
+                'alignItems': 'center',
+                'marginRight': '20px'
+            }),
+        # Forward top 10
+            # html.Div([
+            #     html.H4("Forward", style = {'marginBottom' : '20px'}),
+            #     html.Div([
+            #         html.Label("Select a Metric:", style={'fontSize': '18px'}),
+            #         dcc.Dropdown(
+            #             id='defense-metric-dropdown',
+            #             options=[{'label': feature, 'value': feature} for feature in dv.mid_defense_features],
+            #             value='Tackles', 
+            #             style={'width': '300px', 'margin': 'auto'}
+            #         )
+            #     ], style={'textAlign': 'center', 'padding': '20px'}),
+            #     html.Div([
+            #         dcc.Graph(id='defense-bar-chart', style={'height': '500px'})
+            #     ]),
+            # ], style={
+            #     'display': 'flex',
+            #     'flexDirection': 'column',
+            #     'alignItems': 'center',
+            #     'justifyContent': 'center'
+            # }),
         ], style={
             'display': 'flex',
             'justifyContent': 'center',
             'alignItems': 'flex-start'
         }),
-
-        html.Br(),
-        html.Hr(),
-        # Midfielders
-        html.Div([
-            html.H1("Top 10 Midfielders: Defensive Metrics Comparison", style={'textAlign': 'center'}),
-        html.Div([
-            html.Label("Select a Metric:", style={'fontSize': '18px'}),
-            dcc.Dropdown(
-                id='defense-metric-dropdown',
-                options=[{'label': feature, 'value': feature} for feature in dv.mid_defense_features],
-                value='Tackles', 
-                style={'width': '50%', 'margin': 'auto'}
-            )
-        ], style={'textAlign': 'center', 'padding': '20px'}),
-        
-        html.Div([
-            dcc.Graph(id='defense-bar-chart')
-        ]),
         html.Br(),
         html.Hr(),
         # top 10 Defender -----------------------------------------------------
-        html.H1(id="dynamic-heading-top10-Defender", style={'textAlign': 'center'}),
+        html.H3(id="dynamic-heading-top10-Defender", style={'textAlign': 'center'}),
     
         html.Div([
             html.Label("Select a Metric:", style={'fontSize': '18px'}),
@@ -249,6 +284,7 @@ app.layout = dbc.Container([
     ])
     ])
 ], fluid=True)
+
 # callback cards and graphs
 @callback(
     [
@@ -464,5 +500,6 @@ def update_radar_chart_forward(player_name):
         height=500  # Set the height of the chart
     )
     return radar_chart
+
 if __name__ == '__main__':
     app.run_server(port = '8080')
