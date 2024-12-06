@@ -458,11 +458,11 @@ def update_chart(age_bar,age_violin,over_under_25):
     df6 = midfielder_data[midfielder_data['Age'] <= 25] # dataset for players under 25
 
     df_all_players = pd.concat([df1,df2,df3,df4,df5,df6], ignore_index=True)
-    df_all_players = df_all_players[~df_all_players['Club'].isin(['Real Sociedad', 'Bologna'])]
+    df_all_players = df_all_players[df_all_players['Club'].isin(data['Team'].tolist())]
     df_all_over_25 = pd.concat([df1,df2,df3] ,ignore_index= True)
-    df_all_over_25 = df_all_over_25[~df_all_over_25['Club'].isin(['Real Sociedad', 'Bologna'])]
+    df_all_over_25 = df_all_over_25[df_all_over_25['Club'].isin(data['Team'].tolist())]
     df_all_under_25 = pd.concat([df4, df5, df6], ignore_index=True)
-    df_all_under_25  = df_all_under_25[~df_all_under_25['Club'].isin(['Real Sociedad', 'Bologna'])]
+    df_all_under_25  = df_all_under_25[df_all_under_25['Club'].isin(data['Team'].tolist())]
 
     total_players = df_all_players.groupby('Club').size()
 
@@ -473,8 +473,8 @@ def update_chart(age_bar,age_violin,over_under_25):
     x_over_25_pro = x_over_25 / total_players
 
     y_club_names = np.unique(np.concatenate([defender_data['Club'].unique(),forward_data['Club'].unique(),midfielder_data['Club'].unique()]))
-    ind = np.isin(y_club_names, ['Real Sociedad', 'Bologna'])
-    y_club_names = y_club_names[~ind]
+    ind = np.isin(y_club_names, data['Team'].tolist())
+    y_club_names = y_club_names[ind]
     fig_over_under_25 = go.Figure()
 
     # Add bars for 'Under 25'
