@@ -8,6 +8,7 @@ import random
 from datetime import datetime
 import numpy as np
 import dash_visualize as dv
+from scipy.stats import mode
 
 # dataset
 data = pd.read_csv("./Data/Club/all_data_of_clubs.csv")
@@ -319,6 +320,10 @@ def update_chart(age_bar,age_violin,over_under_25):
         goalkeeper_data['Age'].tolist() + 
         midfielder_data['Age'].tolist()
     )
+    
+    # print("Trung bình hist_data age:", np.mean(hist_data))
+    # print("Trung vị hist_data age:", np.median(hist_data))
+    # print("Mốt hist_data age:", mode(hist_data, keepdims=False).mode)
 
     group = ["All Players' Age"]
     fig_age_bar = ff.create_distplot([hist_data], group,bin_size=1, show_rug=False)
