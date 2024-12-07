@@ -391,7 +391,7 @@ app.layout = dbc.Container([
         }),
         dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
             children='''Goalkeepers are the last line of defense, and their performance often determines the outcome of a match, as they are tasked with protecting the goal from opposing attacks.'''))),
-        html.Br(),
+        html.Br()
 ])], fluid=True)
 
 # callback cards and graphs
@@ -530,24 +530,24 @@ def update_radar_chart(team_name1, team_name2):
 
     attacking_stats1 = attacking_data[attacking_data['Team'] == team_name1].iloc[0]
     values1 = attacking_stats1.tolist()
-    values1 += values1[:1]
+    values1 = values1[1:]
 
     attacking_stats2 = attacking_data[attacking_data['Team'] == team_name2].iloc[0]
     values2 = attacking_stats2.tolist()
-    values2 += values2[:1]
+    values2 = values2[1:]
 
 
     teams_radar_chart = go.Figure()
     teams_radar_chart.add_trace(go.Scatterpolar(
         r=values1,
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accurancy'],
+        theta=['Goals', 'Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'],
         fill='toself',
         name=team_name1
     ))
 
     teams_radar_chart.add_trace(go.Scatterpolar(
         r=values2,
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accurancy'],
+        theta=['Goals', 'Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'],
         fill='toself',
         name=team_name2
     ))
