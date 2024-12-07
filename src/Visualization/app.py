@@ -38,6 +38,23 @@ goalkeeper_metrics = [
     'Accurate long balls'   # Đường chuyền dài chính xác
 ]
 
+best_midfielder_data = midfielder_data.sort_values(by='Assists', ascending=False).head(10)
+best_midfielder_data['Cross accuracy %'] = (
+    best_midfielder_data['Cross accuracy %']
+    .str.replace('%', '', regex=False)
+    .astype(float)
+)
+best_midfielder_data['Tackle success %'] = (
+    best_midfielder_data['Tackle success %']
+    .str.replace('%', '', regex=False)
+    .astype(float)
+)
+available_features = ['Assists', 'Passes', 'Passes per match', 'Big Chances Created',
+                      'Crosses', 'Cross accuracy %', 'Through balls', 'Accurate long balls']
+
+mid_attack_features = ['Goals', 'Goals per match', 'Freekicks scored', 'Shots', 'Shots on target', 'Shots on target']
+mid_defense_features = ['Tackles', 'Tackle success %', 'Interceptions', 'Duels won']
+
 control_fig = px.bar(
     control_data.melt(id_vars='Team', value_vars=control_features, var_name='Metric', value_name='Value'),
     x='Team', y='Value', color='Metric',
@@ -140,7 +157,7 @@ app.layout = dbc.Container([
         dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
             children='''A team's success often lies in finding the right balance between attacking flair and defensive solidity.'''))),
         html.Hr(),
-        dbc.Row(dbc.Col(html.H2(children='Players Analysis'))),
+        dbc.Row(dbc.Col(html.H2(children='Top 10 forward'))),
         html.Div([
             html.Div([
                 #html.H2("Comparison of Goal Scoring Features Among Players", style={'textAlign': 'center'}),
@@ -156,124 +173,55 @@ app.layout = dbc.Container([
             children='''Ever wondered how top Premier League strikers measure up against each other in terms of goal-scoring ability? Let's dive into the stats!'''))),
         html.Hr(),
         html.Div([
-            # Midfielders Radar Chart
+            # Hai biểu đồ đầu tiên: Feature Comparison Chart và Radar Chart
             html.Div([
-                html.H4(
-                    "Position: Midfielder",
-                    style={ 'marginBottom': '20px'}
-                ),
+                # Feature Comparison Chart
                 html.Div([
-                    html.Label("Select a Player:", style={'marginBottom': '10px', 'textAlign': 'center'}),
-                    dcc.Dropdown(
-                        id='player-dropdown',
-                        options=[{'label': name, 'value': name} for name in midfielder_data['Name']],
-                        value=midfielder_data['Name'].iloc[0],
-                        style={'width': '300px', 'marginBottom': '20px'}
-                    ),
-                    dcc.Graph(
-                        id='radar-chart', 
-                    )
-                ], style={
-                    'display': 'flex',
-                    'flexDirection': 'column',
-                    'alignItems': 'center',
-                    'justifyContent': 'center'
-                })
-            ], style={
-                'alignItems': 'center',
-                'marginRight': '20px'
-            }),
-        # Midfielders top 10
+                    html.H4("Feature Comparison: Top 10 Midfielders", style={'textAlign': 'center'}),
+                    html.Div([
+                        html.Label("Select a Metric:", style={'fontSize': '18px'}),
+                        dcc.Dropdown(
+                            id='feature-comparison-dropdown',
+                            options=[{'label': feature, 'value': feature} for feature in available_features],
+                            value='Assists',
+                            style={'width': '90%', 'margin': 'auto'}
+                        )
+                    ], style={'textAlign': 'center', 'padding': '10px'}),
+                    dcc.Graph(id='feature-comparison-chart-updated', style={'height': '400px'})
+                ], style={'width': '48%', 'padding': '10px'}),  # Sử dụng flexbox cho bố cục
+
+                # Radar Chart
+                html.Div([
+                    html.H4("Radar Chart: Midfielders' Attacking Metrics", style={'textAlign': 'center'}),
+                    html.Div([
+                        html.Label("Select a Player:", style={'fontSize': '18px'}),
+                        dcc.Dropdown(
+                            id='radar-chart-dropdown',
+                            options=[{'label': name, 'value': name} for name in midfielder_data['Name']],
+                            value=midfielder_data['Name'].iloc[0],
+                            style={'width': '90%', 'margin': 'auto'}
+                        )
+                    ], style={'textAlign': 'center', 'padding': '10px'}),
+                    dcc.Graph(id='radar-chart-updated', style={'height': '400px'})
+                ], style={'width': '48%', 'padding': '10px'})
+            ], style={'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px'}),
+
+            # Biểu đồ phía dưới: Defensive Metrics Comparison
             html.Div([
-                html.H4("Midfielder Top 10", style = {'marginBottom' : '20px'}),
+                html.H4("Defensive Metrics Comparison: Top 10 Midfielders", style={'textAlign': 'center'}),
                 html.Div([
                     html.Label("Select a Metric:", style={'fontSize': '18px'}),
                     dcc.Dropdown(
-                        id='defense-metric-dropdown',
-                        options=[{'label': feature, 'value': feature} for feature in dv.mid_defense_features],
-                        value='Tackles', 
-                        style={'width': '300px', 'margin': 'auto'}
+                        id='defense-metrics-dropdown-updated',
+                        options=[{'label': feature, 'value': feature} for feature in mid_defense_features],
+                        value='Tackles',
+                        style={'width': '50%', 'margin': 'auto'}
                     )
-                ], style={'textAlign': 'center', 'padding': '20px'}),
-                html.Div([
-                    dcc.Graph(id='defense-bar-chart', style={'height': '500px'})
-                ]),
-            ], style={
-                'display': 'flex',
-                'flexDirection': 'column',
-                'alignItems': 'center',
-                'justifyContent': 'center'
-            }),
-        ], style={
-            'display': 'flex',
-            'justifyContent': 'center',
-            'alignItems': 'flex-start'
-        }),
-        html.Br(),
-        dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
-            children='''Exploring the pivotal role of midfielders, whose skills in both defense and attack shape the course of the game.'''))),
-        html.Hr(),
-        html.Div([
-            # Forward Radar Chart
-            html.Div([
-                html.H4(
-                    "Position: Forward",
-                    style={ 'marginBottom': '20px'}
-                ),
-                html.Div([
-                    html.Label("Select a Player:", style={'marginBottom': '10px', 'textAlign': 'center'}),
-                    dcc.Dropdown(
-                        id='player-dropdown-forward',
-                        options=[{'label': name, 'value': name} for name in forward_data['Name']],
-                        value=forward_data['Name'].iloc[0],
-                        style={'width': '300px', 'marginBottom': '20px'}
-                    ),
-                    dcc.Graph(
-                        id='radar-chart-forward', 
-                    )
-                ], style={
-                    'display': 'flex',
-                    'flexDirection': 'column',
-                    'alignItems': 'center',
-                    'justifyContent': 'center'
-                })
-            ], style={
-                'alignItems': 'center',
-                'marginRight': '20px'
-            }),
-            # Forward top 10
-            html.Div([
-                html.H4("Forward Top 10", style = {'marginBottom' : '20px'}),
-                html.Div([
-                    html.Label("Select a Metric:", style={'fontSize': '18px'}),
-                    dcc.Dropdown(
-                        id = 'forwardtop10_metric',
-                        options = [{'label': name, 'value': name} for name in ['Goals', 'Goals per match' , 'Headed goals','Goals with right foot','Goals with left foot','Penalties scored','Freekicks scored','Shots','Shots on target','Shooting accuracy %','Hit woodwork','Big chances missed'
-                        ,'Assists','Passes','Passes per match','Big Chances Created','Crosses'
-                        ,'Yellow cards','Red cards','Fouls','Offsides'
-                        ,'Tackles','Blocked shots','Interceptions','Clearances','Headed Clearance']],
-                        value = 'Goals',
-                        style={'width': '300px', 'margin': 'auto'}
-                    ),
-                ], style={'textAlign': 'center', 'padding': '20px'}),
-                html.Div([
-                    dcc.Graph(id = 'forwardtop10', style={'height': '500px'})
-                ]),
-            ], style={
-                'display': 'flex',
-                'flexDirection': 'column',
-                'alignItems': 'center',
-                'justifyContent': 'center'
-            }),
-        ], style={
-            'display': 'flex',
-            'justifyContent': 'center',
-            'alignItems': 'flex-start'
-        }),
-        html.Br(),
-        dbc.Row(dbc.Col(html.P(style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'}, 
-            children='''Forward players are the driving force of a team’s attack, with their ability to score and create chances often determining the outcome of a match.'''))),
-        html.Hr(),
+                ], style={'textAlign': 'center', 'padding': '10px'}),
+                dcc.Graph(id='defense-bar-chart-updated', style={'height': '500px'})
+            ], style={'marginTop': '30px', 'padding': '20px'})
+        ]),
+
         # top 10 Defender -----------------------------------------------------
         html.Div([
             # Defender Radar Chart
@@ -721,6 +669,71 @@ def update_radar_chart_forward(player_name):
         height=500  # Set the height of the chart
     )
     return radar_chart
+
+@app.callback(
+    Output('feature-comparison-chart-updated', 'figure'),
+    [Input('feature-comparison-dropdown', 'value')]
+)
+def update_feature_comparison_chart(selected_feature):
+    color_sequence = px.colors.qualitative.Plotly
+    random.shuffle(color_sequence)
+    fig = px.bar(
+        best_midfielder_data,
+        x='Name',
+        y=selected_feature,
+        title=f"Comparison of {selected_feature} for Top 10 Midfielders",
+        text=selected_feature,
+        color_discrete_sequence=color_sequence
+    )
+    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_layout(yaxis_title='Value', xaxis_title='Player', template='plotly_white')
+    return fig
+
+@app.callback(
+    Output('radar-chart-updated', 'figure'),
+    [Input('radar-chart-dropdown', 'value')]
+)
+def update_radar_chart(player_name):
+    player_stats = midfielder_data[midfielder_data['Name'] == player_name][mid_attack_features].iloc[0]
+    values = player_stats.tolist()
+    values += values[:1]
+
+    radar_chart = go.Figure()
+    radar_chart.add_trace(go.Scatterpolar(
+        r=values,
+        theta=mid_attack_features + [mid_attack_features[0]],
+        fill='toself',
+        name=player_name
+    ))
+    radar_chart.update_layout(
+        polar=dict(
+            radialaxis=dict(visible=True),
+        ),
+        title=f"Radar Chart for {player_name}",
+        showlegend=False
+    )
+    return radar_chart
+
+@app.callback(
+    Output('defense-bar-chart-updated', 'figure'),
+    [Input('defense-metrics-dropdown-updated', 'value')]
+)
+def update_defense_metrics_chart(selected_metric):
+    color_sequence = px.colors.qualitative.Plotly
+    random.shuffle(color_sequence)
+    fig = px.bar(
+        best_midfielder_data,
+        x='Name',
+        y=selected_metric,
+        title=f"Comparison of {selected_metric} for Top 10 Midfielders",
+        text=selected_metric,
+        labels={'Name': 'Player', selected_metric: 'Value'},
+        color_discrete_sequence=color_sequence
+    )
+    fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig.update_layout(yaxis_title='Value', xaxis_title='Player', template='plotly_white')
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(port = '8080')
