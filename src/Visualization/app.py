@@ -8,7 +8,6 @@ import random
 from datetime import datetime
 import numpy as np
 import dash_visualize as dv
-from scipy.stats import mode
 
 # dataset
 data = pd.read_csv("./Data/Club/all_data_of_clubs.csv")
@@ -163,21 +162,18 @@ app.layout = dbc.Container([
                     "Position: Midfielder",
                     style={ 'marginBottom': '20px'}
                 ),
-            html.Div([
-                html.H2("Top 10 Midfielders: Feature Comparison", style={'textAlign': 'center'}),
                 html.Div([
-                    html.Label("Select a Metric:", style={'fontSize': '18px'}),
+                    html.Label("Select a Player:", style={'marginBottom': '10px', 'textAlign': 'center'}),
                     dcc.Dropdown(
-                        id='feature-dropdown',
-                        options=[{'label': feature, 'value': feature} for feature in available_features],
-                        value='Assists',
-                        style={'width': '50%', 'margin': 'auto'}
+                        id='player-dropdown',
+                        options=[{'label': name, 'value': name} for name in midfielder_data['Name']],
+                        value=midfielder_data['Name'].iloc[0],
+                        style={'width': '300px', 'marginBottom': '20px'}
+                    ),
+                    dcc.Graph(
+                        id='radar-chart', 
                     )
-                ], style={'textAlign': 'center', 'padding': '20px'}),
-                html.Div([
-                    dcc.Graph(id='feature-comparison-chart')
-                ])
-            ], style={
+                ], style={
                     'display': 'flex',
                     'flexDirection': 'column',
                     'alignItems': 'center',
@@ -432,10 +428,6 @@ def update_chart(age_bar,age_violin,over_under_25):
         goalkeeper_data['Age'].tolist() + 
         midfielder_data['Age'].tolist()
     )
-    
-    # print("Trung bình hist_data age:", np.mean(hist_data))
-    # print("Trung vị hist_data age:", np.median(hist_data))
-    # print("Mốt hist_data age:", mode(hist_data, keepdims=False).mode)
 
     group = ["All Players' Age"]
     fig_age_bar = ff.create_distplot([hist_data], group,bin_size=1, show_rug=False)
@@ -538,7 +530,6 @@ def update_radar_chart(team_name1, team_name2):
 
     attacking_stats1 = attacking_data[attacking_data['Team'] == team_name1].iloc[0]
     values1 = attacking_stats1.tolist()
-<<<<<<< HEAD
     values1 = values1[1:]
 
     attacking_stats2 = attacking_data[attacking_data['Team'] == team_name2].iloc[0]
@@ -550,28 +541,13 @@ def update_radar_chart(team_name1, team_name2):
     teams_radar_chart.add_trace(go.Scatterpolar(
         r=values1,
         theta=['Goals', 'Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'],
-=======
-    #values1 += values1[:1]
-    attacking_stats2 = attacking_data[attacking_data['Team'] == team_name2].iloc[0]
-    values2 = attacking_stats2.tolist()
-    #values2 += values2[:1]
-    teams_radar_chart = go.Figure()
-    teams_radar_chart.add_trace(go.Scatterpolar(
-        r=values1[1:],
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'] + ['Goals'],
->>>>>>> d56214833bfce5778396cb125d238a49fe86f1fe
         fill='toself',
         name=team_name1
     ))
 
     teams_radar_chart.add_trace(go.Scatterpolar(
-<<<<<<< HEAD
         r=values2,
         theta=['Goals', 'Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'],
-=======
-        r=values2[1:],
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'] + ['Goals'],
->>>>>>> d56214833bfce5778396cb125d238a49fe86f1fe
         fill='toself',
         name=team_name2
     ))
@@ -582,7 +558,7 @@ def update_radar_chart(team_name1, team_name2):
             radialaxis=dict(visible=True),
         ),
         title=f"Radar Chart for {team_name1} vs {team_name2}",
-        showlegend=True
+        showlegend=False
     )
     return teams_radar_chart
 
