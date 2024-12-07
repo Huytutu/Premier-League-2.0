@@ -544,24 +544,21 @@ def update_radar_chart(team_name1, team_name2):
 
     attacking_stats1 = attacking_data[attacking_data['Team'] == team_name1].iloc[0]
     values1 = attacking_stats1.tolist()
-    values1 += values1[:1]
-
+    #values1 += values1[:1]
     attacking_stats2 = attacking_data[attacking_data['Team'] == team_name2].iloc[0]
     values2 = attacking_stats2.tolist()
-    values2 += values2[:1]
-
-
+    #values2 += values2[:1]
     teams_radar_chart = go.Figure()
     teams_radar_chart.add_trace(go.Scatterpolar(
-        r=values1,
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accurancy'],
+        r=values1[1:],
+        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'] + ['Goals'],
         fill='toself',
         name=team_name1
     ))
 
     teams_radar_chart.add_trace(go.Scatterpolar(
-        r=values2,
-        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accurancy'],
+        r=values2[1:],
+        theta=['Goals','Goals per match','Penalties scored','Shots','Shots on target','Big Chances Created', 'Shooting accuracy %'] + ['Goals'],
         fill='toself',
         name=team_name2
     ))
@@ -572,7 +569,7 @@ def update_radar_chart(team_name1, team_name2):
             radialaxis=dict(visible=True),
         ),
         title=f"Radar Chart for {team_name1} vs {team_name2}",
-        showlegend=False
+        showlegend=True
     )
     return teams_radar_chart
 
