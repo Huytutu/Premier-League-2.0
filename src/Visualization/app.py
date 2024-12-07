@@ -218,9 +218,16 @@ app.layout = dbc.Container([
                         style={'width': '50%', 'margin': 'auto'}
                     )
                 ], style={'textAlign': 'center', 'padding': '10px'}),
-                dcc.Graph(id='defense-bar-chart-updated', style={'height': '500px'})
+                dcc.Graph(id='defense-bar-chart-updated', style={'height': '500px'}),
+                html.Br(),
+                dbc.Row(dbc.Col(html.P(
+                    style={'font-size': '16px', 'margin': 'auto', 'width': '90%', 'opacity': '70%'},
+                    children='''Defensive midfielders are vital to a team’s performance, contributing significantly to ball recovery, tackling, and disrupting the opposition’s play. This chart visualizes their defensive metrics to compare the best performers.'''
+                ))),
+                html.Hr()
             ], style={'marginTop': '30px', 'padding': '20px'})
         ]),
+        
 
         # top 10 Defender -----------------------------------------------------
         html.Div([
